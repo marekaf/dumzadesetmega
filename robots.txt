@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dumzadesetmega.marekbartik.com/sitemap.xml
