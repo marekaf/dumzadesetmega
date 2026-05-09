@@ -63,6 +63,7 @@ const TRANSLATIONS = {
     'legend.regulation': 'regulace',
     'legend.bank': 'banka',
     'legend.house': 'skutečná stavba',
+    'legend.shareOfTotal': 'z celkového nákladu',
 
     // Sankey node names
     'sankey.node.0': 'Náklad zam.',
@@ -196,6 +197,7 @@ const TRANSLATIONS = {
     'legend.regulation': 'regulation',
     'legend.bank': 'bank',
     'legend.house': 'actual build',
+    'legend.shareOfTotal': 'of total cost',
 
     'sankey.node.0': 'Employer cost',
     'sankey.node.1': 'Income tax',

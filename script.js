@@ -78,9 +78,10 @@ function netFromGross(grossMonthly) {
 }
 
 // Inverze: z čisté najdi hrubou (binární vyhledávání)
+// hi = 30M/měsíc (pokrývá i extrémy slidery — 30M dům × 100% LTV × 8% × 10y dává splátku ~364k → net cíl ~1.8M → gross ~3.4M)
 function grossFromNet(targetNet) {
-  let lo = 1000, hi = 5_000_000;
-  for (let i = 0; i < 60; i++) {
+  let lo = 1000, hi = 30_000_000;
+  for (let i = 0; i < 80; i++) {
     const mid = (lo + hi) / 2;
     const { net } = netFromGross(mid);
     if (net < targetNet) lo = mid;
@@ -308,14 +309,104 @@ function render(state) {
   renderAlternatives(r.notMineMoney);
 }
 
-// === Sankey diagram ===
+// === Mobile flow ===
+// Stacked bar (4 segmenty: stát/regulace/banka/skutečná stavba) + textová legenda.
+// Sankey má 18 uzlů — na mobilu se text plete přes proudy. Tahle verze je čitelná.
+function renderMobileFlow(svg, width, r) {
+  const COLORS = { state: '#c0392b', regulation: '#e67e22', bank: '#7f5af0', house: '#2a9d8f' };
+  const segments = [
+    { label: t('legend.state'),      value: r.totalToState,      color: COLORS.state },
+    { label: t('legend.regulation'), value: r.totalToRegulation, color: COLORS.regulation },
+    { label: t('legend.bank'),       value: r.totalToBank,       color: COLORS.bank },
+    { label: t('legend.house'),      value: r.totalToHouse,      color: COLORS.house },
+  ];
+  const total = r.totalEmployerCost;
+  const padding = 16;
+  const barH = 70;
+  const barGap = 28;
+  const legendItemH = 56;
+  const titleH = 28;
+  const height = padding * 2 + titleH + barH + barGap + segments.length * legendItemH;
+
+  svg.attr('viewBox', `0 0 ${width} ${height}`);
+  svg.style('height', height + 'px');
+
+  // Title nad barem
+  svg.append('text')
+    .attr('x', padding).attr('y', padding + 16)
+    .style('font-size', '13px').style('font-weight', '600').style('fill', '#6b6b6b')
+    .style('text-transform', 'uppercase').style('letter-spacing', '0.06em')
+    .text(`${fmtMil(total)} → `);
+  svg.append('text')
+    .attr('x', padding + 105).attr('y', padding + 16)
+    .style('font-size', '13px').style('font-weight', '700').style('fill', '#1a1a1a')
+    .text('100 %');
+
+  // Stacked bar
+  const barY = padding + titleH;
+  const barW = width - padding * 2;
+  let x = padding;
+  for (const seg of segments) {
+    const segW = (seg.value / total) * barW;
+    svg.append('rect')
+      .attr('x', x).attr('y', barY).attr('width', segW).attr('height', barH)
+      .attr('fill', seg.color);
+    // Procentní label uvnitř, jen pokud se vejde
+    const pctLabel = fmtPct(seg.value / total);
+    if (segW >= 40) {
+      svg.append('text')
+        .attr('x', x + segW / 2).attr('y', barY + barH / 2 + 5)
+        .attr('text-anchor', 'middle').attr('fill', '#fff')
+        .style('font-size', '14px').style('font-weight', '700')
+        .text(pctLabel);
+    }
+    x += segW;
+  }
+
+  // Legenda pod barem (jeden řádek per segment: barevný čtverec, label, částka, %)
+  let ly = barY + barH + barGap;
+  for (const seg of segments) {
+    svg.append('rect')
+      .attr('x', padding).attr('y', ly).attr('width', 20).attr('height', 20)
+      .attr('rx', 3).attr('fill', seg.color);
+
+    svg.append('text')
+      .attr('x', padding + 30).attr('y', ly + 14)
+      .style('font-size', '15px').style('font-weight', '700').style('fill', '#1a1a1a')
+      .text(seg.label);
+
+    svg.append('text')
+      .attr('x', width - padding).attr('y', ly + 14)
+      .attr('text-anchor', 'end')
+      .style('font-size', '15px').style('font-weight', '700')
+      .style('font-variant-numeric', 'tabular-nums').style('fill', seg.color)
+      .text(fmtMil(seg.value));
+
+    svg.append('text')
+      .attr('x', padding + 30).attr('y', ly + 34)
+      .style('font-size', '12px').style('fill', '#6b6b6b')
+      .text(fmtPct(seg.value / total) + ' ' + t('legend.shareOfTotal'));
+
+    ly += legendItemH;
+  }
+}
+
+// === Money flow visualization ===
+// Desktop: full d3-sankey. Mobile: stacked horizontal bar + receipt-like legend
+// (Sankey má příliš mnoho uzlů na úzkou šířku — text se na mobilu plete přes proudy)
 function renderSankey(r) {
   const svg = d3.select('#sankey');
   svg.selectAll('*').remove();
 
   const width = svg.node().getBoundingClientRect().width;
   const isMobile = width < 700;
-  const height = isMobile ? 1100 : 760;
+
+  if (isMobile) {
+    renderMobileFlow(svg, width, r);
+    return;
+  }
+
+  const height = 760;
   svg.attr('viewBox', `0 0 ${width} ${height}`);
   svg.style('height', height + 'px');
 
