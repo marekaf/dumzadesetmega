@@ -274,7 +274,6 @@ input[type="range"]::-moz-range-thumb {
 /* SANKEY */
 #sankey {
   width: 100%;
-  height: 480px;
   display: block;
   margin-top: 16px;
 }
@@ -425,9 +424,6 @@ footer {
   .hero { padding: 40px 20px; }
   .hero-stats {
     grid-template-columns: 1fr;
-  }
-  #sankey {
-    height: 700px;
   }
   #receipt th, #receipt td {
     padding: 10px 8px;
