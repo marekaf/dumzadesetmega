@@ -306,16 +306,30 @@ TRANSLATIONS.en['method.html'] = `
 `;
 
 // Aktivní jazyk + helpers
-let CURRENT_LANG = localStorage.getItem('lang') || 'cs';
+// Priorita: URL param ?lang= > localStorage > browser default > 'cs'
+function detectInitialLang() {
+  const url = new URLSearchParams(window.location.search).get('lang');
+  if (url === 'cs' || url === 'en') return url;
+  const ls = localStorage.getItem('lang');
+  if (ls === 'cs' || ls === 'en') return ls;
+  return navigator.language?.startsWith('en') ? 'en' : 'cs';
+}
+let CURRENT_LANG = detectInitialLang();
 function t(key) {
   return TRANSLATIONS[CURRENT_LANG][key] ?? TRANSLATIONS.cs[key] ?? key;
 }
 function setLanguage(lang) {
   CURRENT_LANG = lang;
   localStorage.setItem('lang', lang);
-  applyTranslations();
-  if (typeof render === 'function') render(state);
+  // Aktualizuj URL bez reloadu (pro sdílení/SEO konzistenci)
+  const url = new URL(window.location.href);
+  if (lang === 'cs') url.searchParams.delete('lang');
+  else url.searchParams.set('lang', lang);
+  window.history.replaceState({}, '', url);
+  // Aktualizuj <html lang="">
   document.documentElement.lang = lang;
+  applyTranslations();
+  if (typeof render === 'function' && typeof state !== 'undefined') render(state);
 }
 function applyTranslations() {
   document.title = t('doc.title');

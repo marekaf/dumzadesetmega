@@ -1,0 +1,45 @@
+# Dům za deset mega
+
+> Czech-language interactive visualization of the total tax and interest burden of buying a house in the Czech Republic. Shows how much of a 10M CZK house price actually goes to the state, the bank, and the regulatory premium — versus the real value of the building itself.
+
+A static one-page web app (vanilla HTML + CSS + JavaScript + d3-sankey). The user adjusts a slider for house price (and several other parameters: LTV, interest rate, loan term, DSTI, regulatory premium, hidden builder taxes), and the page recomputes a Sankey diagram, an itemized "tax + interest receipt", and concrete amounts in CZK.
+
+The reveal: for a typical 10 million CZK house in the Czech Republic, only about 25–30 % of what your employer must pay (over the lifetime of the mortgage) ends up as actual building value. The rest goes to the state (income tax, social/health insurance, VAT, ZPF land removal tax, property tax, hidden taxes paid by the construction firm), the bank (mortgage interest), and a regulatory premium (NZEB / mandated near-zero energy standards, mandated surveys, over-engineered building codes, holding cost of long permitting).
+
+## Live site
+
+- [Czech (default)](https://dumzadesetmega.marekbartik.com/)
+- [English (via language switcher)](https://dumzadesetmega.marekbartik.com/)
+
+## Sources and methodology
+
+The methodology section on the page lists every data source used, with direct links:
+
+- [Finanční správa ČR — 2026 income tax rates](https://financnisprava.gov.cz/cs/financni-sprava/media-a-verejnost/tiskove-zpravy-gfr/tiskove-zpravy-2026/danove-novinky-pro-rok-2026)
+- [ČSSZ — 2026 social insurance rates](https://www.cssz.cz/-/prehled-nejdulezitejsich-udaju-pro-socialni-zabezpeceni-v-roce-2026)
+- [VZP — 2026 health insurance rates](https://www.vzp.cz/o-nas/tiskove-centrum/otazky-tydne/platby-zdravotniho-pojisteni-v-roce-2026)
+- [Hypoindex — Czech mortgage rate index](https://www.hypoindex.cz/hypoindex-vyvoj/)
+- [ČNB — DSTI/LTV/DTI macroprudential limits](https://www.cnb.cz/cs/financni-stabilita/makroobezretnostni-politika/stanoveni-horni-hranice-uverovych-ukazatelu/)
+- [ČSÚ — average wages](https://csu.gov.cz/zamestnanci-a-mzdy)
+- [RTS Stavební standardy — construction cost manual](https://www.stavebnistandardy.cz/doc/ceny/manual_ceny.htm)
+- [Act 334/1992 Sb. — agricultural land removal](https://www.zakonyprolidi.cz/cs/1992-334)
+- [Act 386/2020 Sb. — abolition of real estate transfer tax](https://www.zakonyprolidi.cz/cs/2020-386)
+- [MPO — NZEB requirements](https://mpo.gov.cz/assets/cz/energetika/energeticka-ucinnost/2019/11/NZEB-pozadavky-web-MPO.pdf)
+- [EFEKT — NZEB impact study](https://efekt.gov.cz/upload/7799f3fd595eeee1fa66875530f33e8a/efekt-rozvoj-a-dopady-zavadeni-budov-s-temer-nulovou-spotrebou-energie-v9.pdf)
+- [ČKAIT — building permit duration analysis](https://www.ckait.cz/delka-povolovani-staveb-v-cr-nikoliv-roky-ale-mesice-ukazal-pruzkum-ckait)
+
+## Default scenario (10 mil. CZK house, 80 % LTV, 5.18 % rate, 30-year term, 45 % DSTI, 20 % regulatory premium, 15 % hidden builder taxes)
+
+- Total employer cost over 30 years: ~33 mil. CZK
+- Goes to state (taxes, contributions, VAT): ~50 % (~16.5 mil. CZK)
+- Goes to bank (interest): ~22 % (~7.4 mil. CZK)
+- Regulatory premium: ~5 % (~1.5 mil. CZK)
+- Real value of build + project: ~23 % (~7.5 mil. CZK)
+
+## Author
+
+Built by Marek Bartík (https://marekbartik.com). Source code: https://github.com/marekaf/dumzadesetmega
+
+## License and reuse
+
+The data model, methodology, and source code are open. Cite the live URL when referencing or reusing.

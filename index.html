@@ -5,18 +5,98 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dům za deset mega — kolik z toho jde státu a bance</title>
   <meta name="description" content="Kolik reálně stojí pořízení domu v ČR? Vizualizace daňového zatížení, úroků z hypotéky a DPH na konkrétním domě.">
+  <meta name="author" content="Marek Bartík">
+  <meta name="theme-color" content="#c0392b">
+  <meta name="color-scheme" content="light">
+
+  <!-- Canonical + alternates -->
+  <link rel="canonical" href="https://dumzadesetmega.marekbartik.com/">
+  <link rel="alternate" hreflang="cs" href="https://dumzadesetmega.marekbartik.com/">
+  <link rel="alternate" hreflang="en" href="https://dumzadesetmega.marekbartik.com/?lang=en">
+  <link rel="alternate" hreflang="x-default" href="https://dumzadesetmega.marekbartik.com/">
+
+  <!-- OpenGraph -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Dům za deset mega">
+  <meta property="og:title" content="Dům za deset mega — kolik z toho jde státu a bance">
+  <meta property="og:description" content="Z 10 mil. Kč jde státu a bance dohromady ~24 mil. Kč. Interaktivní vizualizace celkového daňového a úrokového zatížení při pořízení domu v ČR.">
+  <meta property="og:url" content="https://dumzadesetmega.marekbartik.com/">
+  <meta property="og:image" content="https://dumzadesetmega.marekbartik.com/og.png">
+  <meta property="og:image:type" content="image/png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Z 10 mil. Kč jde státu a bance dohromady ~24 mil. Kč.">
+  <meta property="og:locale" content="cs_CZ">
+  <meta property="og:locale:alternate" content="en_US">
+
+  <!-- Twitter / X -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Dům za deset mega — kolik z toho jde státu a bance">
+  <meta name="twitter:description" content="Z 10 mil. Kč jde státu a bance dohromady ~24 mil. Kč. Interaktivní vizualizace pro ČR.">
+  <meta name="twitter:image" content="https://dumzadesetmega.marekbartik.com/og.png">
+
+  <!-- Favicon + PWA -->
+  <link rel="icon" type="image/svg+xml" href="favicon.svg">
+  <link rel="apple-touch-icon" href="favicon.svg">
+  <link rel="manifest" href="manifest.webmanifest">
+
+  <!-- Structured data -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebApplication",
+        "@id": "https://dumzadesetmega.marekbartik.com/#app",
+        "name": "Dům za deset mega",
+        "url": "https://dumzadesetmega.marekbartik.com/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript",
+        "description": "Interaktivní vizualizace celkového daňového a úrokového zatížení při pořízení rodinného domu v České republice. Spočítá kolik z ceny domu jde státu na daních, bance na úrocích z hypotéky, kolik je regulační přídavek a kolik zbývá na reálnou hodnotu stavby.",
+        "inLanguage": ["cs", "en"],
+        "isAccessibleForFree": true,
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "CZK" },
+        "author": {
+          "@type": "Person",
+          "name": "Marek Bartík",
+          "url": "https://marekbartik.com"
+        }
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://dumzadesetmega.marekbartik.com/#website",
+        "name": "Dům za deset mega",
+        "url": "https://dumzadesetmega.marekbartik.com/",
+        "inLanguage": "cs"
+      }
+    ]
+  }
+  </script>
+
+  <!-- Performance: preconnect na CDN -->
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+  <link rel="dns-prefetch" href="https://cdn.jsdelivr.net">
+
   <link rel="stylesheet" href="style.css">
-  <script src="https://cdn.jsdelivr.net/npm/d3@7"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12"></script>
-  <script src="translations.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-sankey@0.12" defer></script>
+  <script src="translations.js" defer></script>
 </head>
 <body>
 
+  <noscript>
+    <div style="background:#fff3a8;color:#1a1a1a;padding:16px;text-align:center;font-family:sans-serif;">
+      Pro plnou funkčnost (interaktivní kalkulačka a vizualizace toku peněz) je potřeba JavaScript. /
+      For full functionality (interactive calculator and money flow visualization), JavaScript is required.
+    </div>
+  </noscript>
+
   <!-- Language switcher -->
-  <div class="lang-switcher">
-    <button data-lang="cs" onclick="setLanguage('cs')">CZ</button>
-    <button data-lang="en" onclick="setLanguage('en')">EN</button>
-  </div>
+  <nav class="lang-switcher" aria-label="Language">
+    <button data-lang="cs" onclick="setLanguage('cs')" aria-label="Čeština">CZ</button>
+    <button data-lang="en" onclick="setLanguage('en')" aria-label="English">EN</button>
+  </nav>
 
   <!-- SVG dům + zahrada na pozadí -->
   <div class="bg-illustration" aria-hidden="true">
