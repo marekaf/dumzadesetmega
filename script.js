@@ -314,8 +314,10 @@ function renderSankey(r) {
   svg.selectAll('*').remove();
 
   const width = svg.node().getBoundingClientRect().width;
-  const height = 480;
+  const isMobile = width < 700;
+  const height = isMobile ? 1100 : 760;
   svg.attr('viewBox', `0 0 ${width} ${height}`);
+  svg.style('height', height + 'px');
 
   // Definice toku peněz (jen ta část employer cost, která jde na bydlení)
   // node names přes i18n
@@ -381,9 +383,10 @@ function renderSankey(r) {
   ];
 
   const sankey = d3.sankey()
-    .nodeWidth(18)
-    .nodePadding(14)
-    .extent([[10, 10], [width - 10, height - 10]]);
+    .nodeWidth(14)
+    .nodePadding(isMobile ? 18 : 26)
+    .nodeAlign(d3.sankeyJustify)
+    .extent([[10, 20], [width - 10, height - 20]]);
 
   const graph = sankey({
     nodes: nodes.map(d => Object.assign({}, d)),
@@ -423,24 +426,68 @@ function renderSankey(r) {
     .attr('width', d => d.x1 - d.x0)
     .attr('fill', d => colorOf(d));
 
-  node.append('text')
-    .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-    .attr('y', d => (d.y1 + d.y0) / 2)
-    .attr('dy', '0.35em')
-    .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
-    .attr('fill', '#1a1a1a')
-    .style('font-size', '13px')
-    .style('font-weight', '600')
-    .text(d => d.name);
+  // Skryj label u mikro-uzlů (< 1.5 % celkového toku) — jinak se text plete přes velké uzly
+  const totalFlow = r.totalEmployerCost;
+  const minLabelValue = totalFlow * 0.015;
 
-  node.append('text')
-    .attr('x', d => d.x0 < width / 2 ? d.x1 + 6 : d.x0 - 6)
-    .attr('y', d => (d.y1 + d.y0) / 2 + 14)
-    .attr('dy', '0.35em')
-    .attr('text-anchor', d => d.x0 < width / 2 ? 'start' : 'end')
-    .attr('fill', '#666')
-    .style('font-size', '11px')
-    .text(d => fmtMil(d.value));
+  // Helper na rozdělení dlouhého názvu na 2 řádky (po prvním slově za prahem)
+  const splitName = (name, threshold = 14) => {
+    if (name.length <= threshold) return [name];
+    const words = name.split(' ');
+    if (words.length === 1) return [name];
+    let line1 = '';
+    let i = 0;
+    while (i < words.length && (line1.length + words[i].length) < threshold) {
+      line1 += (line1 ? ' ' : '') + words[i];
+      i++;
+    }
+    if (!line1) { line1 = words[0]; i = 1; }
+    const line2 = words.slice(i).join(' ');
+    return line2 ? [line1, line2] : [line1];
+  };
+
+  // Skupina labelů — každý uzel má text vně rectu, mikro-uzly ho mají skrytý
+  const labels = node.filter(d => d.value >= minLabelValue);
+
+  labels.each(function(d) {
+    const g = d3.select(this);
+    const lines = splitName(d.name);
+    const isLeft = d.x0 < width / 2;
+    const x = isLeft ? d.x1 + 6 : d.x0 - 6;
+    const anchor = isLeft ? 'start' : 'end';
+    const cy = (d.y1 + d.y0) / 2;
+    // Vertikální offset: text + value, vycentrované kolem středu uzlu
+    const lineH = 14;
+    const totalLines = lines.length + 1; // +1 pro hodnotu
+    const startY = cy - ((totalLines - 1) * lineH) / 2;
+
+    lines.forEach((line, idx) => {
+      g.append('text')
+        .attr('x', x)
+        .attr('y', startY + idx * lineH)
+        .attr('dy', '0.35em')
+        .attr('text-anchor', anchor)
+        .attr('fill', '#1a1a1a')
+        .style('font-size', isMobile ? '11px' : '12px')
+        .style('font-weight', '600')
+        .style('paint-order', 'stroke')
+        .style('stroke', '#fafbfc')
+        .style('stroke-width', '3px')
+        .text(line);
+    });
+
+    g.append('text')
+      .attr('x', x)
+      .attr('y', startY + lines.length * lineH)
+      .attr('dy', '0.35em')
+      .attr('text-anchor', anchor)
+      .attr('fill', '#666')
+      .style('font-size', isMobile ? '10px' : '11px')
+      .style('paint-order', 'stroke')
+      .style('stroke', '#fafbfc')
+      .style('stroke-width', '3px')
+      .text(fmtMil(d.value));
+  });
 }
 
 // === "Co jsi za to mohl mít" ===
