@@ -64,6 +64,8 @@ const TRANSLATIONS = {
     'legend.bank': 'banka',
     'legend.house': 'skutečná stavba',
     'legend.shareOfTotal': 'z celkového nákladu',
+    'sankey.aria.title': 'Diagram toku peněz při pořízení domu',
+    'sankey.aria.desc': 'Z celkového nákladu zaměstnavatele {total} jde {state} státu, {regulation} na regulační přídavek, {bank} bance na úroky a {house} na reálnou hodnotu stavby. Detailní rozpis najdete v sekci „Daňový a úrokový účet" pod diagramem.',
 
     // Sankey node names
     'sankey.node.0': 'Náklad zam.',
@@ -198,6 +200,8 @@ const TRANSLATIONS = {
     'legend.bank': 'bank',
     'legend.house': 'actual build',
     'legend.shareOfTotal': 'of total cost',
+    'sankey.aria.title': 'Money flow diagram for buying a house',
+    'sankey.aria.desc': 'Of the total employer cost {total}, {state} goes to the state, {regulation} to the regulatory premium, {bank} to the bank as interest, and {house} as real value of the building. See the "Tax and interest receipt" section below for the itemized breakdown.',
 
     'sankey.node.0': 'Employer cost',
     'sankey.node.1': 'Income tax',
@@ -343,8 +347,10 @@ function applyTranslations() {
   document.querySelectorAll('[data-i18n-html]').forEach(el => {
     el.innerHTML = t(el.dataset.i18nHtml);
   });
-  // Switcher state
+  // Switcher state — class pro vizuál + aria-pressed pro screen readery
   document.querySelectorAll('.lang-switcher button').forEach(b => {
-    b.classList.toggle('active', b.dataset.lang === CURRENT_LANG);
+    const active = b.dataset.lang === CURRENT_LANG;
+    b.classList.toggle('active', active);
+    b.setAttribute('aria-pressed', active ? 'true' : 'false');
   });
 }
