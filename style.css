@@ -433,8 +433,12 @@ footer {
 
 /* PRINT */
 @media print {
-  .bg-illustration { display: none; }
+  .bg-illustration,
+  .lang-switcher { display: none; }
   body { background: #fff; }
   section { box-shadow: none; border: 1px solid #ddd; page-break-inside: avoid; }
-  .inputs { display: none; }
+  .inputs,
+  .sankey-section { display: none; } /* sankey nedává smysl na papíře — receipt to pokryje */
+  a { color: var(--color-text); text-decoration: underline; }
+  a[href]::after { content: " (" attr(href) ")"; font-size: 10px; color: #666; }
 }

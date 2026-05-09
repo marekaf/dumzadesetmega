@@ -31,7 +31,8 @@ const RATES = {
   defaultRegulatoryPremium: 0.20,
 
   // Skryté daně stavebníka: mzdové daně jeho dělníků + daň ze zisku + odvody firmy
-  // mzdy ~40 % stavebních nákladů × ~46 % daňové zatížení = ~18 %; + 2 % daň ze zisku
+  // Mzdy + osobní náklady ~25–30 % stavby (zdroj RTS Stavební standardy) × ~46 % zatížení = ~13 %
+  // + 2 % daň ze zisku z marže ~10 % × 19 % = celkem ~15 %
   defaultBuilderHiddenTaxRate: 0.15,
 
   // Hypoteční pravidla ČNB pro 36+
@@ -41,8 +42,18 @@ const RATES = {
   defaultTermYears: 30,
 
   // Pro porovnání "co bys za to mohl mít"
-  avgNetMonthlyWage: 38_000, // průměrná čistá mzda 2026 (odhad)
+  avgNetMonthlyWage: 38_000, // průměrná čistá mzda 2026 (ČSÚ Q4/2025)
+  alt: {
+    flatPrice: 5_000_000,    // byt 2+kk mimo Prahu
+    carPrice: 1_500_000,     // střední třída
+    holidayPrice: 80_000,    // dovolená pro rodinu
+    studyYearPrice: 500_000, // rok studia v zahraničí
+    pensionMonthly: 20_000,  // dodatečný měsíční důchod
+  },
 };
+
+// Sdílený breakpoint pro mobil — drž synchronizovaný s @media v style.css
+const MOBILE_BREAKPOINT = 700;
 
 // === Výpočty ===
 
@@ -398,8 +409,20 @@ function renderSankey(r) {
   const svg = d3.select('#sankey');
   svg.selectAll('*').remove();
 
+  // ARIA — SVG je grafika, slepým uživatelům dáme alespoň souhrn ve <title>/<desc>
+  svg.attr('role', 'img').attr('aria-labelledby', 'sankey-title sankey-desc');
+  svg.append('title').attr('id', 'sankey-title').text(t('sankey.aria.title'));
+  svg.append('desc').attr('id', 'sankey-desc').text(
+    t('sankey.aria.desc')
+      .replace('{total}', fmtMil(r.totalEmployerCost))
+      .replace('{state}', fmtMil(r.totalToState))
+      .replace('{regulation}', fmtMil(r.totalToRegulation))
+      .replace('{bank}', fmtMil(r.totalToBank))
+      .replace('{house}', fmtMil(r.totalToHouse))
+  );
+
   const width = svg.node().getBoundingClientRect().width;
-  const isMobile = width < 700;
+  const isMobile = width < MOBILE_BREAKPOINT;
 
   if (isMobile) {
     renderMobileFlow(svg, width, r);
@@ -475,7 +498,7 @@ function renderSankey(r) {
 
   const sankey = d3.sankey()
     .nodeWidth(14)
-    .nodePadding(isMobile ? 18 : 26)
+    .nodePadding(26)
     .nodeAlign(d3.sankeyJustify)
     .extent([[10, 20], [width - 10, height - 20]]);
 
@@ -559,7 +582,7 @@ function renderSankey(r) {
         .attr('dy', '0.35em')
         .attr('text-anchor', anchor)
         .attr('fill', '#1a1a1a')
-        .style('font-size', isMobile ? '11px' : '12px')
+        .style('font-size', '12px')
         .style('font-weight', '600')
         .style('paint-order', 'stroke')
         .style('stroke', '#fafbfc')
@@ -573,7 +596,7 @@ function renderSankey(r) {
       .attr('dy', '0.35em')
       .attr('text-anchor', anchor)
       .attr('fill', '#666')
-      .style('font-size', isMobile ? '10px' : '11px')
+      .style('font-size', '11px')
       .style('paint-order', 'stroke')
       .style('stroke', '#fafbfc')
       .style('stroke-width', '3px')
@@ -588,12 +611,12 @@ function fmtCount(n) {
 function renderAlternatives(amount) {
   const yearsAvgWage = amount / (RATES.avgNetMonthlyWage * 12);
   const items = [
-    { icon: '⏱', big: fmtCount(yearsAvgWage), unit: t('alt.years'), sub: t('alt.years.sub').replace('{wage}', fmtCZK(RATES.avgNetMonthlyWage)) },
-    { icon: '🏠', big: fmtCount(amount / 5_000_000), unit: t('alt.flats'), sub: t('alt.flats.sub') },
-    { icon: '🚗', big: fmtCount(amount / 1_500_000), unit: t('alt.cars'), sub: t('alt.cars.sub') },
-    { icon: '✈', big: fmtCount(amount / 80_000), unit: t('alt.holidays'), sub: t('alt.holidays.sub') },
-    { icon: '🎓', big: fmtCount(amount / 500_000), unit: t('alt.studies'), sub: t('alt.studies.sub') },
-    { icon: '👴', big: fmtCount(amount / 240_000), unit: t('alt.pension'), sub: t('alt.pension.sub') },
+    { icon: '⏱', big: fmtCount(yearsAvgWage),                              unit: t('alt.years'),    sub: t('alt.years.sub').replace('{wage}', fmtCZK(RATES.avgNetMonthlyWage)) },
+    { icon: '🏠', big: fmtCount(amount / RATES.alt.flatPrice),              unit: t('alt.flats'),    sub: t('alt.flats.sub') },
+    { icon: '🚗', big: fmtCount(amount / RATES.alt.carPrice),               unit: t('alt.cars'),     sub: t('alt.cars.sub') },
+    { icon: '✈', big: fmtCount(amount / RATES.alt.holidayPrice),           unit: t('alt.holidays'), sub: t('alt.holidays.sub') },
+    { icon: '🎓', big: fmtCount(amount / RATES.alt.studyYearPrice),         unit: t('alt.studies'),  sub: t('alt.studies.sub') },
+    { icon: '👴', big: fmtCount(amount / (RATES.alt.pensionMonthly * 12)),  unit: t('alt.pension'),  sub: t('alt.pension.sub') },
   ];
 
   const grid = document.getElementById('alternatives-grid');
@@ -654,5 +677,16 @@ window.addEventListener('DOMContentLoaded', () => {
   bindInput('dsti', 'dsti', v => +v / 100);
   bindInput('regulatoryPremium', 'regulatoryPremium', v => +v / 100);
   bindInput('builderHiddenTaxRate', 'builderHiddenTaxRate', v => +v / 100);
-  window.addEventListener('resize', () => render(state));
+
+  // Naváži handlery na lang switcher (místo inline onclick — kvůli budoucímu CSP)
+  document.querySelectorAll('.lang-switcher button').forEach(btn => {
+    btn.addEventListener('click', () => setLanguage(btn.dataset.lang));
+  });
+
+  // Resize s debounce — sankey layout je drahá operace, nedělej ji per-pixel
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => render(state), 150);
+  });
 });
